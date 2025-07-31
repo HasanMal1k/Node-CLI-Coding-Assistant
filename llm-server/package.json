@@ -1,0 +1,18 @@
+{
+  "name": "llm-server",
+  "version": "1.0.0",
+  "main": "llm-server.js",
+  "type": "module",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "",
+  "license": "ISC",
+  "description": "",
+  "dependencies": {
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "ollama": "^0.5.16",
+    "socket.io": "^4.8.1"
+  }
+}
