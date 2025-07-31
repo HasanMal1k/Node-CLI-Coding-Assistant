@@ -1,3 +1,5 @@
+#!/usr/bin/env node
+
 import figlet from "figlet";
 import gradient, { teen } from "gradient-string";
 import inquirer from "inquirer";
@@ -5,6 +7,7 @@ import ora from "ora";
 import chalk from "chalk";
 import { sendMessage, socket } from './client-server.js'
 import readAllFiles from "./readAndCompress.js";
+import path from 'path';
 
 const sleep = (ms = 2000) => new Promise((r) => setTimeout(r, ms));
 
@@ -125,13 +128,17 @@ const handleCodeUpload = async () => {
         return;
     }
 
-    console.log(chalk.cyan('\nPreparing to upload your code files...'));
+    const currentDir = process.cwd()
+    const dirName = path.basename(currentDir)
+    
+    console.log(chalk.cyan(`\nPreparing to upload code from: ${chalk.bold(dirName)}`));
+    console.log(chalk.gray(`Full path: ${currentDir}`));
     
     const { confirm } = await inquirer.prompt([
         {
             type: 'confirm',
             name: 'confirm',
-            message: chalk.cyan('This will scan your current directory and upload all code files. Continue?'),
+            message: chalk.cyan(`Scan and upload all code files from "${dirName}"?`),
             default: true,
             prefix: chalk.cyan('?')
         }
@@ -144,14 +151,15 @@ const handleCodeUpload = async () => {
 
     isProcessingUpload = true;
     const uploadSpinner = ora({
-        text: chalk.cyan('Reading and compressing code files...'),
+        text: chalk.cyan(`Reading and compressing code files from ${dirName}...`),
         color: 'cyan',
         spinner: 'dots12'
     }).start();
 
     try {
-        await readAllFiles(process.cwd());
-        uploadSpinner.succeed(chalk.green.bold('Code files uploaded successfully!'));
+        // Pass current working directory instead of CLI directory
+        await readAllFiles(currentDir);
+        uploadSpinner.succeed(chalk.green.bold(`Code files from "${dirName}" uploaded successfully!`));
         console.log(chalk.cyan('LLM is processing your code...'));
         
     } catch (error) {

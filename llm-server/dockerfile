@@ -1,0 +1,37 @@
+# Use official Node.js runtime as base image
+FROM node:18-alpine
+
+# Set working directory inside container
+WORKDIR /app
+
+# Create code directory for uploaded files
+RUN mkdir -p /app/code
+
+# Copy package.json first for better caching
+COPY package.json ./
+
+# Install dependencies
+RUN npm install --production
+
+# Copy application code
+COPY . .
+
+# Create non-root user for security
+RUN addgroup -g 1001 -S nodejs
+RUN adduser -S vitauser -u 1001
+
+# Change ownership of app directory
+RUN chown -R vitauser:nodejs /app
+
+# Switch to non-root user
+USER vitauser
+
+# Expose port 8080
+EXPOSE 8080
+
+# Health check to ensure server is running
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD node -e "require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })" || exit 1
+
+# Start the application
+CMD ["node", "llm-server.js"]

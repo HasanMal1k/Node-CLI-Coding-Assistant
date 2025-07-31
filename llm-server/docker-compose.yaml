@@ -1,0 +1,60 @@
+version: '3.8'
+
+services:
+  # Ollama service (the LLM engine)
+  ollama:
+    image: ollama/ollama:latest
+    container_name: vita-ollama
+    ports:
+      - "11434:11434"
+    volumes:
+      - ollama_data:/root/.ollama
+    environment:
+      - OLLAMA_HOST=0.0.0.0
+    networks:
+      - vita-network
+    restart: unless-stopped
+    # For GPU support (uncomment if you have NVIDIA GPU)
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: 1
+    #           capabilities: [gpu]
+
+  # Your LLM Server
+  vita-server:
+    build: 
+      context: ./llm-server
+      dockerfile: Dockerfile
+    container_name: vita-llm-server
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./llm-server/code:/app/code
+      - vita_uploads:/app/uploads
+    environment:
+      - NODE_ENV=production
+      - OLLAMA_HOST=http://ollama:11434
+    depends_on:
+      - ollama
+    networks:
+      - vita-network
+    restart: unless-stopped
+    healthcheck:
+      test: ["CMD", "node", "-e", "require('http').get('http://localhost:8080/health', (res) => { process.exit(res.statusCode === 200 ? 0 : 1) })"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+
+volumes:
+  ollama_data:
+    driver: local
+  vita_uploads:
+    driver: local
+
+networks:
+  vita-network:
+    driver: bridge
