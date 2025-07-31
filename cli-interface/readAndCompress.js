@@ -107,7 +107,7 @@ const readAllFiles = async (targetDir) => {
         createWriteStream(brFile)
     )
 
-    console.log(`✅ Compressed ${path.basename(targetDir)} codebase`)
+    console.log(`Compressed ${path.basename(targetDir)} codebase`)
 
     // Send to server
     await sendToServer(brFile)

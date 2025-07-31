@@ -16,7 +16,7 @@ const sendToServer = async (filePath) => {
         
         formData.append('codeFile', createReadStream(absolutePath))
 
-        console.log(`📤 Uploading compressed codebase to server...`)
+        console.log(` Uploading compressed codebase to server...`)
         
         const response = await axios.post('http://localhost:8080/api/file', formData, {
             headers: formData.getHeaders(),
